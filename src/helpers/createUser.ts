@@ -3,7 +3,7 @@ import { MongoClient } from "mongodb";
 export interface User {
   firstName: string;
   lastName: string;
-  profilePicUrl: string;
+  profilePic: Buffer;
   email: string;
   password: string;
   mobileNumber: string;

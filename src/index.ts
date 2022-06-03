@@ -6,15 +6,37 @@ import { getUser } from "./helpers/getUser";
 import jwt from "jsonwebtoken";
 import { encryptPassword } from "./helpers/encryptPassword";
 import { authenticateToken } from "./helpers/authenticateToken";
+import multer from "multer";
+import { comparePassword } from "./helpers/comparePassword";
+import fs from "fs";
 
 const app = express();
 
+// ENVIRONMENT VARIABLE
 const PORT = env("PORT") || 9000;
 const DATABASE_URL = env("DATABASE_URL");
 
+// MIDDLEWARE
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 
+//Multer
+//STORAGE
+let storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, path.join(__dirname, "uploads"));
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.fieldname + "-" + Date.now());
+  },
+});
+
+// Upload
+let upload = multer({ storage: storage });
+
+//API ROUTES
+// GET USER DETAILS
 app.get("/:email", authenticateToken, async (req, res) => {
   const email = req.params.email;
   try {
@@ -29,16 +51,20 @@ app.get("/:email", authenticateToken, async (req, res) => {
   }
 });
 
+// CREATE A USER
 // need to add profile image saving functionality
-app.post("/", async (req, res) => {
+app.post("/", upload.single("file"), async (req, res) => {
   const reqData: User = req.body;
   const hashPassword = await encryptPassword(reqData.password);
+  const file = req.file;
+  if (!file) return res.sendStatus(400);
+  const profilePic = fs.readFileSync(file.path);
   const data: User = {
     firstName: reqData.firstName,
     lastName: reqData.lastName,
     email: reqData.email,
     mobileNumber: reqData.mobileNumber,
-    profilePicUrl: reqData.profilePicUrl,
+    profilePic: profilePic,
     password: hashPassword,
   };
 
@@ -50,13 +76,22 @@ app.post("/", async (req, res) => {
   }
 });
 
+// AUTHENTICATE A USER
 app.post("/auth", async (req, res) => {
   const { email: reqEmail, password: reqPassword } = req.body;
   try {
     const SECRET_KEY = env("SECRET_KEY");
     const data = await getUser(reqEmail, DATABASE_URL);
+    // data &&
+    //   console.log("Password", data.password, "\nReqPassword", reqPassword);
 
-    if (data && data.password === reqPassword) {
+    // data &&
+    //   console.log(
+    //     "compare password",
+    //     await comparePassword(reqPassword, data.password)
+    //   );
+
+    if (data && (await comparePassword(reqPassword, data.password))) {
       const token = jwt.sign(
         { email: reqEmail, password: data.password },
         SECRET_KEY,
@@ -71,6 +106,13 @@ app.post("/auth", async (req, res) => {
   } catch (error) {
     res.status(500).json(error);
   }
+});
+
+// Uploading image
+app.post("/upload", upload.single("file"), (req, res) => {
+  const file = req.file;
+  if (!file) return res.sendStatus(400);
+  res.send(file);
 });
 
 app.listen(PORT, () => {
