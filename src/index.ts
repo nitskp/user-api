@@ -54,19 +54,50 @@ app.get("/signup", (req, res) => {
 
 // details
 app.get("/details", (req, res) => {
-  res.render("details");
+  const firstName = "Nitin";
+  const lastName = "Pandey";
+  const mobileNumber = "9876543210";
+  const link = "images/designerror.png";
+  const email = "test@gmail.com";
+  res.render("details", {
+    firstName,
+    lastName,
+    mobileNumber,
+    link,
+    email,
+  });
 });
 //API ROUTES
 // GET USER DETAILS
-app.get("/:email", authenticateToken, async (req, res) => {
+app.get("/details/:email", async (req, res) => {
   const email = req.params.email;
+  // console.log(email);
   try {
-    const result = await getUser(email);
-    result
-      ? res.status(200).json({
-          data: result,
-        })
-      : res.sendStatus(500);
+    const result = await getUser(email, false);
+    // console.log(result)
+    if (!result) return res.sendStatus(500);
+    res.status(200).json({
+      data: result,
+    });
+    const {
+      firstName,
+      lastName,
+      email: userEmail,
+      profilePic: profilePicBuffer,
+      mobileNumber,
+    } = result;
+    const link = "www.google.com";
+    // // console.log(result);
+    // console.log(typeof profilePicBuffer);
+    // const binary = Buffer.from(profilePicBuffer)
+    // const imgData = new Blob(binary.buffer,{type: 'application/octet-binary'})
+    // // res.render("details", {
+    //   firstName,
+    //   lastName,
+    //   mobileNumber,
+    //   email,
+    //   link,
+    // });
   } catch (error) {
     res.status(500).json(error);
   }
