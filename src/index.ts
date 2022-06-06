@@ -38,11 +38,24 @@ let storage = multer.diskStorage({
 // Upload
 let upload = multer({ storage: storage });
 
-//
+// home
 app.get("/", (req, res) => {
   res.render("home");
 });
+// login
+app.get("/auth", (req, res) => {
+  res.render("login");
+});
 
+//signup
+app.get("/signup", (req, res) => {
+  res.render("signup");
+});
+
+// details
+app.get("/details", (req, res) => {
+  res.render("details");
+});
 //API ROUTES
 // GET USER DETAILS
 app.get("/:email", authenticateToken, async (req, res) => {
