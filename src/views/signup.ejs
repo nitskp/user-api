@@ -10,7 +10,7 @@
       integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor"
       crossorigin="anonymous"
     />
-    <title>Document</title>
+    <title>Sign up</title>
   </head>
   <body>
     <div class="container">
@@ -19,16 +19,16 @@
         <!-- Name  -->
         <div class="mb-3">
           <label for="first-name" class="form-label">First Name</label>
-          <input type="text" class="form-control" id="first-name" />
+          <input type="text" class="form-control" id="firstName" name="firstName"/>
         </div>
         <div class="mb-3">
           <label for="last-name" class="form-label">Last Name</label>
-          <input type="text" class="form-control" id="last-name" />
+          <input type="text" class="form-control" id="lastName" name="lastName"/>
         </div>
         <!-- Profile Pic  -->
         <div class="mb-3">
           <label for="formFile" class="form-label">Profile Pic</label>
-          <input class="form-control" type="file" id="formFile" />
+          <input class="form-control" type="file" id="file" name="file"/>
         </div>
         <!-- Email  -->
         <div class="mb-3">
@@ -37,19 +37,20 @@
             type="email"
             class="form-control"
             id="email"
+            name="email"
             aria-describedby="emailHelp"
           />
         </div>
         <!-- Password  -->
         <div class="mb-3">
           <label for="password" class="form-label">Password</label>
-          <input type="password" class="form-control" id="password" />
+          <input type="password" class="form-control" id="password" name="password"/>
         </div>
 
         <!-- Mobile Number  -->
         <div class="mb-3">
           <label for="mobile" class="form-label">Mobile Number</label>
-          <input type="tel" class="form-control" id="mobile" />
+          <input type="tel" class="form-control" id="mobileNumber" name="mobileNumber"/>
         </div>
 
         <button type="submit" class="btn btn-primary">Submit</button>

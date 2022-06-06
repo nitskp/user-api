@@ -1,14 +1,16 @@
 import express from "express";
-import { env } from "./helpers/env";
+import { env } from "./controllers/env";
 import path from "path";
-import { createUser, User } from "./helpers/createUser";
-import { getUser } from "./helpers/getUser";
+import { createUser } from "./controllers/createUser";
+import { getUser } from "./controllers/getUser";
 import jwt from "jsonwebtoken";
-import { encryptPassword } from "./helpers/encryptPassword";
-import { authenticateToken } from "./helpers/authenticateToken";
+import { encryptPassword } from "./controllers/encryptPassword";
+import { authenticateToken } from "./controllers/authenticateToken";
 import multer from "multer";
-import { comparePassword } from "./helpers/comparePassword";
+import { comparePassword } from "./controllers/comparePassword";
 import fs from "fs";
+import { connectToMongo } from "./controllers/connectToMongo";
+import { UserInterface } from "./models/user.model";
 
 const app = express();
 
@@ -19,7 +21,8 @@ const DATABASE_URL = env("DATABASE_URL");
 // MIDDLEWARE
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, "public")));
+app.set("views", path.join(__dirname, "views"));
+app.set("view engine", "ejs");
 
 //Multer
 //STORAGE
@@ -35,12 +38,17 @@ let storage = multer.diskStorage({
 // Upload
 let upload = multer({ storage: storage });
 
+//
+app.get("/", (req, res) => {
+  res.render("home");
+});
+
 //API ROUTES
 // GET USER DETAILS
 app.get("/:email", authenticateToken, async (req, res) => {
   const email = req.params.email;
   try {
-    const result = await getUser(email, DATABASE_URL);
+    const result = await getUser(email);
     result
       ? res.status(200).json({
           data: result,
@@ -54,12 +62,12 @@ app.get("/:email", authenticateToken, async (req, res) => {
 // CREATE A USER
 // need to add profile image saving functionality
 app.post("/", upload.single("file"), async (req, res) => {
-  const reqData: User = req.body;
+  const reqData: UserInterface = req.body;
   const hashPassword = await encryptPassword(reqData.password);
   const file = req.file;
   if (!file) return res.sendStatus(400);
   const profilePic = fs.readFileSync(file.path);
-  const data: User = {
+  const data: UserInterface = {
     firstName: reqData.firstName,
     lastName: reqData.lastName,
     email: reqData.email,
@@ -81,15 +89,7 @@ app.post("/auth", async (req, res) => {
   const { email: reqEmail, password: reqPassword } = req.body;
   try {
     const SECRET_KEY = env("SECRET_KEY");
-    const data = await getUser(reqEmail, DATABASE_URL);
-    // data &&
-    //   console.log("Password", data.password, "\nReqPassword", reqPassword);
-
-    // data &&
-    //   console.log(
-    //     "compare password",
-    //     await comparePassword(reqPassword, data.password)
-    //   );
+    const data = await getUser(reqEmail, true);
 
     if (data && (await comparePassword(reqPassword, data.password))) {
       const token = jwt.sign(
@@ -117,4 +117,5 @@ app.post("/upload", upload.single("file"), (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Server listening on PORT ${PORT}`);
+  connectToMongo(DATABASE_URL);
 });
