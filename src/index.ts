@@ -76,9 +76,9 @@ app.get("/details/:email", async (req, res) => {
     const result = await getUser(email, false);
     // console.log(result)
     if (!result) return res.sendStatus(500);
-    res.status(200).json({
-      data: result,
-    });
+    // res.status(200).json({
+    //   data: result,
+    // });
     const {
       firstName,
       lastName,
@@ -86,18 +86,21 @@ app.get("/details/:email", async (req, res) => {
       profilePic: profilePicBuffer,
       mobileNumber,
     } = result;
-    const link = "www.google.com";
     // // console.log(result);
     // console.log(typeof profilePicBuffer);
-    // const binary = Buffer.from(profilePicBuffer)
-    // const imgData = new Blob(binary.buffer,{type: 'application/octet-binary'})
-    // // res.render("details", {
-    //   firstName,
-    //   lastName,
-    //   mobileNumber,
-    //   email,
-    //   link,
-    // });
+    // const binary = Buffer.from(profilePicBuffer);
+    // const imgData = new [profilePicBuffer as BlobPart]();
+
+    const rawBuffer = profilePicBuffer.toString("base64");
+    const link = "data:image/png;base64," + rawBuffer;
+
+    res.render("details", {
+      firstName,
+      lastName,
+      mobileNumber,
+      email,
+      link,
+    });
   } catch (error) {
     res.status(500).json(error);
   }
